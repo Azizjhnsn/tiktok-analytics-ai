@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output (WXT)
+.output/
+.wxt/
+dist/
+*.zip
+
+# Per-user config and secrets (keep .env.example)
+.env
+.env.*
+!.env.example
+
+# Per-user captured analytics and exports
+data/*
+!data/.gitkeep
+debugging/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# Private planning notes
+PROJECT.md
