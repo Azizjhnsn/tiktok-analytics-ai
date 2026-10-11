@@ -8,7 +8,6 @@ function clean(value: unknown): string | undefined {
 
 // Static references so the bundler can inline each value.
 export const ENV = {
-  exportDir: clean(import.meta.env.WXT_EXPORT_DIR),
   openAiApiKey: clean(import.meta.env.WXT_OPENAI_API_KEY),
   openAiModel: clean(import.meta.env.WXT_OPENAI_MODEL),
 };

@@ -35,6 +35,8 @@ export interface VideoSummary {
   isPhoto: boolean;
   /** Set to private ('Only me'). Kept in the data, excluded from comparisons. */
   isPrivate: boolean;
+  /** Cover image link from the captured data (signed; expires after about a day). */
+  coverUrl: string | null;
   views: number | null;
   likes: number | null;
   comments: number | null;

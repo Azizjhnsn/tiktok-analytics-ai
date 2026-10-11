@@ -12,7 +12,4 @@ export interface Settings {
   walkSessionCap: number;
   /** Date ranges (days) the walk loads each account page with. */
   walkDateRanges: number[];
-  /** Override WXT_OPENAI_API_KEY / WXT_OPENAI_MODEL when non-empty. Stored locally only. */
-  openAiApiKey: string;
-  openAiModel: string;
 }

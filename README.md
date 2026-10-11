@@ -8,9 +8,10 @@ Built for creators stuck at a view ceiling (e.g. videos stalling around 200 view
 
 1. **Captures** every analytics number TikTok Studio shows: per video (views, likes, comments, shares, saves, retention curve, average watch time, completion rate, traffic sources, new followers) and account-wide (overview, viewers, followers, content) across 7/28/60/365-day ranges.
 2. **Organizes** it automatically into one clean structure: hook retention at 2s/3s, the biggest drop-off second, engagement rates, and the time window of every number. Private videos are detected and left out of comparisons.
-3. **Lets you add context** (optional): your growth stage, format and hook tags per video, and explanations for unusual numbers (friends shared it, a promotion, accidental likes) so the analysis isn't skewed.
-4. **Diagnoses with AI** (OpenAI, your own key): what works, what doesn't, the likely causes (hook first), and concrete next steps for your growth stage.
-5. **Exports** everything as a single JSON file.
+3. **Tags videos automatically**: AI reads each video's cover image and caption to tag its format, hook type and on-screen hook text. You can check a short list of key videos and optionally correct any other.
+4. **Lets you add context** (optional): your growth stage and explanations for unusual numbers (friends shared it, a promotion, accidental likes) so the analysis isn't skewed.
+5. **Diagnoses with AI** (OpenAI, your own key): what works, what doesn't, the likely causes (hook first), and concrete next steps for your growth stage. Then chat with it to clarify anything.
+6. **Exports** everything as a single JSON file (optional backup; the app itself reads from the extension's local storage).
 
 ## Safe by design
 
@@ -36,9 +37,8 @@ Load it in Chrome: `chrome://extensions` → enable **Developer mode** → **Loa
 
 | Variable | Purpose |
 |---|---|
-| `WXT_OPENAI_API_KEY` | Your OpenAI API key, used for the diagnosis. Can also be entered on the dashboard. |
-| `WXT_OPENAI_MODEL` | Model for the diagnosis. Defaults to `gpt-5-mini`. |
-| `WXT_EXPORT_DIR` | Folder suggested by the "Copy path" button when saving exports. |
+| `WXT_OPENAI_API_KEY` | Your OpenAI API key, used for auto-tagging and the diagnosis. |
+| `WXT_OPENAI_MODEL` | Model to use. Defaults to `gpt-5-mini` (must accept images for auto-tagging). |
 
 `.env.local` is git-ignored. Values are baked in at build time, so rebuild after changing them, and don't share your `.output/` folder.
 
@@ -51,8 +51,8 @@ Load it in Chrome: `chrome://extensions` → enable **Developer mode** → **Loa
 3. Click **Open dashboard** to:
    - set your growth stage (200 / 500 / 1000 / custom views),
    - review flagged anomalies and tag your videos (optional),
-   - **Run diagnosis** for AI analysis and next steps,
-   - **Save as…** to export the full dataset as JSON.
+   - **Run diagnosis** for AI analysis and next steps, then **ask follow-up questions** in the chat below it,
+   - **⬇ Download** (top right) to save the full dataset as JSON to your Downloads folder.
 
 ## Tech stack
 

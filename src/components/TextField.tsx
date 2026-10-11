@@ -15,7 +15,9 @@ interface TextFieldProps {
 export function TextField({ label, value, onCommit, placeholder, suggestions, type = 'text', disabled }: TextFieldProps) {
   const [draft, setDraft] = useState(value);
   const listId = useId();
-  useEffect(() => setDraft(value), [value]);
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
 
   const commit = () => {
     if (draft !== value) onCommit(draft);

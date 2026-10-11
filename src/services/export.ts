@@ -4,7 +4,7 @@ import { fileTimestamp, nowIso } from '@/utils/time';
 import { findUsername, getDataStats } from './capture';
 import { detectAnomalies } from './anomalies';
 import { organize } from './organizer';
-import { getAllCaptures, getDiagnosis, getEnrichment, nextExportNumber } from './storage';
+import { getAllCaptures, getChat, getDiagnosis, getEnrichment, nextExportNumber } from './storage';
 
 /** Next export filename, e.g. E003_yourname_20261010-0918_64v.json. Advances the export counter. */
 export async function nextExportFilename(): Promise<string> {
@@ -13,11 +13,12 @@ export async function nextExportFilename(): Promise<string> {
 }
 
 export async function buildExport(): Promise<ExportFile> {
-  const [stats, captures, enrichment, diagnosis] = await Promise.all([
+  const [stats, captures, enrichment, diagnosis, chat] = await Promise.all([
     getDataStats(),
     getAllCaptures(),
     getEnrichment(),
     getDiagnosis(),
+    getChat(),
   ]);
   const organized = organize(captures);
   return {
@@ -29,6 +30,7 @@ export async function buildExport(): Promise<ExportFile> {
     enrichment,
     anomalies: detectAnomalies(organized.videos.map((v) => v.summary)),
     diagnosis,
+    chat,
     captures,
   };
 }

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sendMessage } from '@/services/messaging';
 import type { AnalysisView } from '@/types/analysis';
-import type { Diagnosis } from '@/types/diagnosis';
 import type { Enrichment } from '@/types/enrichment';
 
 /** Loads the analysis view once; enrichment edits are saved and applied locally. */
@@ -29,9 +28,5 @@ export function useAnalysis() {
     }
   }, []);
 
-  const setDiagnosis = useCallback((diagnosis: Diagnosis) => {
-    setView((current) => current && { ...current, diagnosis });
-  }, []);
-
-  return { view, error, reload, updateEnrichment, setDiagnosis };
+  return { view, error, reload, updateEnrichment };
 }

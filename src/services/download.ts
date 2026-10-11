@@ -1,48 +1,15 @@
 import { browser } from 'wxt/browser';
-import { EXPORT_PICKER_ID } from '@/config/constants';
 import { logger } from '@/utils/logger';
 
 /**
- * Saves data as a JSON file in a folder the user picks.
- * Prefers the native save picker (exact name, not affected by download managers, remembers its folder);
- * falls back to a Save As download where the picker is unavailable (e.g. Brave).
- * Call from an extension page that stays open (not the popup, which closes when a dialog opens).
- * The picker opens before `loadData` runs, so the click's user activation hasn't expired.
- * Returns false when the user cancels.
+ * Downloads data as a JSON file straight into the browser's Downloads folder (no dialog).
+ * A backup only: the app and the AI read captured data from extension storage, never from this file.
+ * Call from an extension page that stays open, so the blob URL lives until the download finishes.
  */
-export async function saveJsonAs(filename: string, loadData: () => Promise<unknown>): Promise<boolean> {
-  return window.showSaveFilePicker ? saveWithPicker(filename, loadData) : saveWithDownload(filename, toJsonBlob(await loadData()));
-}
-
-function toJsonBlob(data: unknown): Blob {
-  return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-}
-
-async function saveWithPicker(filename: string, loadData: () => Promise<unknown>): Promise<boolean> {
-  let handle: FileSystemFileHandle;
+export async function downloadJson(filename: string, data: unknown): Promise<void> {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
   try {
-    handle = await window.showSaveFilePicker!({
-      suggestedName: filename,
-      id: EXPORT_PICKER_ID,
-      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
-    });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') return false;
-    throw error;
-  }
-  const blob = toJsonBlob(await loadData());
-  const writable = await handle.createWritable();
-  await writable.write(blob);
-  await writable.close();
-  return true;
-}
-
-async function saveWithDownload(filename: string, blob: Blob): Promise<boolean> {
-  const url = URL.createObjectURL(blob);
-  try {
-    const id = await browser.downloads.download({ url, filename, saveAs: true });
-    revokeWhenFinished(id, url);
-    return true;
+    revokeWhenFinished(await browser.downloads.download({ url, filename }), url);
   } catch (error) {
     URL.revokeObjectURL(url);
     logger.error('Download failed', error);

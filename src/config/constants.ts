@@ -1,5 +1,4 @@
 import type { Enrichment } from '@/types/enrichment';
-import { ENV } from './env';
 import type { Settings } from '@/types/settings';
 
 export const APP_NAME = 'TikTok Analytics Collector';
@@ -50,23 +49,20 @@ export const POSTS_SCROLL_MAX_ROUNDS = 40;
 export const POSTS_SCROLL_STALE_LIMIT = 3;
 
 export const DB_NAME = 'tt-analytics-collector';
-export const DB_VERSION = 2;
+export const DB_VERSION = 4;
 export const SETTINGS_KEY = 'settings';
 export const WALK_STATE_KEY = 'walkState';
 export const EXPORT_COUNTER_KEY = 'exportCounter';
 export const ENRICHMENT_KEY = 'enrichment';
 export const DIAGNOSIS_KEY = 'diagnosis';
+export const CHAT_KEY = 'chat';
 /** Suggested export folder, copied for pasting into the Save As dialog. */
-/** From WXT_EXPORT_DIR in .env.local; undefined when not set. */
-export const EXPORT_DIR = ENV.exportDir;
 /** Used only when neither the dashboard setting nor WXT_OPENAI_MODEL is set. */
 export const FALLBACK_OPENAI_MODEL = 'gpt-5-mini';
 export const OPENAI_CHAT_URL = 'https://api.openai.com/v1/chat/completions';
 /** Cap on each raw account insight sent to the LLM, in characters. */
 export const LLM_ACCOUNT_INSIGHT_MAX_CHARS = 3000;
 export const LLM_CAPTION_MAX_CHARS = 150;
-export const COPIED_FEEDBACK_MS = 2000;
-export const EXPORT_PICKER_ID = 'tt-export';
 export const DASHBOARD_PATH = '/dashboard.html';
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -76,14 +72,16 @@ export const DEFAULT_SETTINGS: Settings = {
   walkDelayMaxMs: 6000,
   walkSessionCap: 40,
   walkDateRanges: [7],
-  openAiApiKey: '',
-  openAiModel: '',
 };
 
 export const STATS_REFRESH_MS = 2000;
 
 export const GROWTH_STAGE_PRESETS = [200, 500, 1000];
-export const DEFAULT_ENRICHMENT: Enrichment = { growthStage: 200, videoTags: {}, anomalyAnswers: {} };
+export const DEFAULT_ENRICHMENT: Enrichment = { growthStage: 200, videoTags: {}, autoTags: {}, anomalyAnswers: {} };
+/** Videos per auto-tagging request. */
+export const AUTO_TAG_BATCH_SIZE = 8;
+/** Key videos (top and bottom by views) suggested for the user to check. */
+export const REVIEW_VIDEO_COUNT = 10;
 export const FORMAT_SUGGESTIONS = ['Green screen', 'Talking head', 'Edited explainer', 'Screen recording', 'Slideshow', 'Tutorial'];
 export const HOOK_TYPE_SUGGESTIONS = ['Question', 'Bold claim', 'Curiosity gap', 'Shock / surprise', 'Problem → solution', 'Story', 'List / number', 'Visual hook'];
 

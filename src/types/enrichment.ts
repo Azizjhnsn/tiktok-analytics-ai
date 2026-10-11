@@ -5,6 +5,18 @@ export interface VideoTags {
   hookText?: string;
 }
 
+/** Tags the AI inferred from a video's cover image and caption. */
+export interface AutoTags extends VideoTags {
+  taggedAt: string;
+  /** False when the cover image couldn't be used (e.g. expired link) and only the caption was read. */
+  fromImage: boolean;
+}
+
+/** Tags used for analysis: the user's where given, otherwise the AI's. */
+export interface EffectiveTags extends VideoTags {
+  source: 'user' | 'auto' | 'mixed' | null;
+}
+
 export interface AnomalyAnswer {
   /** What happened, e.g. "friends shared it", "accidental like burst". */
   context?: string;
@@ -15,8 +27,10 @@ export interface AnomalyAnswer {
 export interface Enrichment {
   /** View count where videos usually stall; sets the diagnosis focus. */
   growthStage: number;
+  /** User-entered tags (override auto tags field by field). */
   videoTags: Record<string, VideoTags>;
-  /** Keyed by anomaly id. */
+  autoTags: Record<string, AutoTags>;
+  /** Keyed by video id (one answer covers all of a video's odd numbers). */
   anomalyAnswers: Record<string, AnomalyAnswer>;
 }
 

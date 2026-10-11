@@ -5,6 +5,7 @@ import type { AccountInsight, VideoSummary } from '@/types/organized';
 import { round } from '@/utils/math';
 import { mean, median, present } from '@/utils/stats';
 import { detectAnomalies } from './anomalies';
+import { effectiveTags } from './enrichment';
 import { organize } from './organizer';
 import { getAllCaptures, getDiagnosis, getEnrichment } from './storage';
 
@@ -45,7 +46,7 @@ export async function getAnalysisView(): Promise<AnalysisView> {
 
 /** Videos used for comparisons: public, and not marked "ignore" in any anomaly answer. */
 function comparableVideos(videos: VideoSummary[], anomalies: Anomaly[], enrichment: Enrichment): VideoSummary[] {
-  const ignored = new Set(anomalies.filter((a) => enrichment.anomalyAnswers[a.id]?.ignore).map((a) => a.videoId));
+  const ignored = new Set(anomalies.filter((a) => enrichment.anomalyAnswers[a.videoId]?.ignore).map((a) => a.videoId));
   return videos.filter((v) => !v.isPrivate && !ignored.has(v.id));
 }
 
@@ -88,16 +89,15 @@ function durationBucket(sec: number | null): string | null {
 }
 
 function compactVideo(video: VideoSummary, enrichment: Enrichment, anomalies: Anomaly[]) {
-  const { retentionCurve, caption, ...numbers } = video;
-  const notes = anomalies
-    .filter((a) => a.videoId === video.id)
-    .map((a) => ({ flag: a.reason, ...enrichment.anomalyAnswers[a.id] }));
+  const { retentionCurve, caption, coverUrl: _coverUrl, ...numbers } = video;
+  const flags = anomalies.filter((a) => a.videoId === video.id).map((a) => a.reason);
+  const notes = flags.length ? { flags, userContext: enrichment.anomalyAnswers[video.id]?.context ?? null } : null;
   return {
     ...numbers,
     caption: caption?.slice(0, LLM_CAPTION_MAX_CHARS) ?? null,
     postedLocal: video.createdAt ? new Date(video.createdAt).toLocaleString() : null,
     retentionFirst10s: retentionCurve.filter((p) => p.sec <= 10).map((p) => round(p.rate, 2)),
-    tags: enrichment.videoTags[video.id] ?? {},
+    tags: effectiveTags(enrichment, video.id),
     anomalies: notes,
   };
 }
@@ -124,7 +124,7 @@ export async function buildDiagnosisInput() {
 export function composeDiagnosisInput(view: AnalysisView, accountInsights: Record<string, AccountInsight[]>) {
   const { videos, anomalies, enrichment } = view;
   const comparable = comparableVideos(videos, anomalies, enrichment);
-  const tagOf = (field: 'format' | 'hookType') => (v: VideoSummary) => enrichment.videoTags[v.id]?.[field]?.trim() || null;
+  const tagOf = (field: 'format' | 'hookType') => (v: VideoSummary) => effectiveTags(enrichment, v.id)[field] ?? null;
   const stage = enrichment.growthStage;
 
   return {
@@ -143,5 +143,12 @@ export function composeDiagnosisInput(view: AnalysisView, accountInsights: Recor
     byDuration: groupBy(comparable, (v) => durationBucket(v.durationSec)),
     account: trimmedAccountInsights(accountInsights),
     videos: comparable.map((v) => compactVideo(v, enrichment, anomalies)),
+    /** Videos left out of comparisons (private, or excluded by the user), so odd numbers can be explained. */
+    excludedVideos: videos
+      .filter((v) => !comparable.includes(v))
+      .map((v) => ({
+        ...compactVideo(v, enrichment, anomalies),
+        excludedBecause: v.isPrivate ? 'private' : 'user excluded',
+      })),
   };
 }

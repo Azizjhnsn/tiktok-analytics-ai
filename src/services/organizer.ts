@@ -122,6 +122,7 @@ function organizeVideo(
     durationSec,
     isPhoto: Boolean(info.image_post_info) || (durationSec === null && views !== null),
     isPrivate: toNumber(item.visibility) === PRIVATE_VISIBILITY,
+    coverUrl: findCoverUrl(info, video, item),
     views,
     likes,
     comments,
@@ -155,4 +156,18 @@ function findUsername(videos: OrganizedVideo[]): string | null {
 function findUserId(captures: CaptureRecord[]): string | null {
   const body = captures.findLast((c) => c.path === USER_PATH)?.body;
   return isRecord(body) && typeof body.userId === 'string' ? body.userId : null;
+}
+
+/** First cover link found in the captured video info, photo-post info or post list. */
+function findCoverUrl(info: Record<string, unknown>, video: Record<string, unknown>, item: Record<string, unknown>): string | null {
+  const photoCover = isRecord(info.image_post_info) ? info.image_post_info.image_post_cover : undefined;
+  const candidates = [
+    isRecord(video.cover) ? video.cover.url_list : undefined,
+    isRecord(photoCover) && isRecord(photoCover.display_image) ? photoCover.display_image.url_list : undefined,
+    item.cover_url,
+  ];
+  for (const list of candidates) {
+    if (Array.isArray(list) && typeof list[0] === 'string') return list[0];
+  }
+  return null;
 }

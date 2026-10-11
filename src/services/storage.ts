@@ -5,6 +5,7 @@ import {
   DB_VERSION,
   DEFAULT_ENRICHMENT,
   DEFAULT_SETTINGS,
+  CHAT_KEY,
   DIAGNOSIS_KEY,
   ENRICHMENT_KEY,
   EXPORT_COUNTER_KEY,
@@ -12,6 +13,7 @@ import {
   WALK_STATE_KEY,
 } from '@/config/constants';
 import type { CaptureRecord } from '@/types/capture';
+import type { ChatTurn } from '@/types/chat';
 import type { Diagnosis } from '@/types/diagnosis';
 import type { Enrichment } from '@/types/enrichment';
 import type { Settings } from '@/types/settings';
@@ -43,6 +45,15 @@ function getDb(): Promise<IDBPDatabase<CollectorDB>> {
         store.createIndex('byPath', 'path');
         store.createIndex('byContentKey', 'contentKey', { unique: true });
       }
+      // v3 briefly stored file handles; drop that store.
+      if (oldVersion < 4 && (db.objectStoreNames as DOMStringList).contains('handles')) {
+        db.deleteObjectStore('handles' as never);
+      }
+    },
+    // Another context (background or dashboard) is upgrading the DB: release this connection.
+    blocking() {
+      void dbPromise?.then((db) => db.close());
+      dbPromise = null;
     },
   });
   return dbPromise;
@@ -163,4 +174,12 @@ export async function getDiagnosis(): Promise<Diagnosis | null> {
 
 export function saveDiagnosis(diagnosis: Diagnosis): Promise<Diagnosis> {
   return writeLocal(DIAGNOSIS_KEY, diagnosis);
+}
+
+export async function getChat(): Promise<ChatTurn[]> {
+  return (await readLocal<ChatTurn[]>(CHAT_KEY)) ?? [];
+}
+
+export function saveChat(turns: ChatTurn[]): Promise<ChatTurn[]> {
+  return writeLocal(CHAT_KEY, turns);
 }
